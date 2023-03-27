@@ -2,6 +2,9 @@ import { Component } from 'react';
 import { ContactForm } from './ContactForm/ContactForm';
 import { ContactList } from './Contact/ContactList';
 import { Filter } from './Filter/Filter';
+import { nanoid } from 'nanoid';
+
+const STORAGE_KEY = 'contacts';
 
 export class App extends Component {
   state = {
@@ -14,17 +17,31 @@ export class App extends Component {
     filter: '',
   };
 
+  componentDidMount() {
+    const parsedContacts = JSON.parse(localStorage.getItem(STORAGE_KEY));
+    if (parsedContacts) {
+      this.setState({ contacts: parsedContacts });
+    }
+  }
+
+  componentDidUpdate(prevState) {
+    if (prevState.contacts !== this.state.contacts) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(this.state.contacts));
+    }
+  }
+
   onFilter = element => {
     this.setState({ filter: element.currentTarget.value });
   };
 
   addContact = newContact => {
+    const contact = {name:newContact.name, number:newContact.number, id: nanoid()}
     this.setState(({ contacts }) =>
       contacts.find(
         contact => contact.name.toLowerCase() === newContact.name.toLowerCase()
       )
         ? alert(`${newContact.name} is already in contacts`)
-        : { contacts: [newContact, ...contacts] }
+        : { contacts: [contact, ...contacts] }
     );
   };
 
